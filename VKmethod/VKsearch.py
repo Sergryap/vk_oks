@@ -9,7 +9,7 @@ class VkSearch:
     """Класс методов поиска и сортировки из api-vk"""
 
     url = 'https://api.vk.com/method/'
-    with open(os.path.join("token.txt"), encoding='utf-8') as file:
+    with open(os.path.join("VKmethod", "token.txt"), encoding='utf-8') as file:
         token = [t.strip() for t in file.readlines()]
     token_bot = token[0]
     token = token[1:]
@@ -47,3 +47,37 @@ class VkSearch:
             self.__set_params()
         count = i + 1  # счетчик стэков вызова
         return self.get_stability(method, params_delta, i=count)
+
+    def get_info_users(self):
+        """
+        Получение данных о пользователе по его id
+        :return: словарь с данными по пользователю
+        """
+        params_delta = {'user_ids': self.user_id, 'fields': 'country,city,bdate,sex'}
+        response = self.get_stability('users.get', params_delta)
+        if response:
+            birth_info = self.get_birth_date(response)
+            birth_date = birth_info[0]
+            birth_year = birth_info[1]
+            return {
+                'user_id': self.user_id,
+                'city_id': response['response'][0]['city']['id'],
+                'sex': response['response'][0]['sex'],
+                'first_name': response['response'][0]['first_name'],
+                'last_name': response['response'][0]['last_name'],
+                'bdate': birth_date,
+                'year_birth': birth_year
+            }
+
+    @staticmethod
+    def get_birth_date(res: dict):
+        """
+        Получение данных о возрасте пользователя
+        :return: кортеж с датой: str и годом рождения: int
+        """
+        birth_date = None if 'bdate' not in res['response'][0] else res['response'][0]['bdate']
+        birth_year = None
+        if birth_date:
+            birth_date = None if len(birth_date.split('.')) < 3 else birth_date
+            birth_year = time.strptime(birth_date, "%d.%m.%Y").tm_year if birth_date else None
+        return birth_date, birth_year

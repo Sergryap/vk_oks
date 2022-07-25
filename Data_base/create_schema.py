@@ -12,7 +12,7 @@ Base = declarative_base()
 class Client(Base):
     __tablename__ = 'client'
 
-    client_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, primary_key=True)
     city_id = Column(Integer)
     sex = Column(Integer, nullable=False)
     first_name = Column(String(100), nullable=False)
@@ -27,7 +27,7 @@ class Ses(Base):
     __tablename__ = 'ses'
 
     session_id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey("client.client_id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("client.user_id"), nullable=False)
     time_session = Column(Time)
     message = relationship('Message', cascade="all,delete", backref='ses')
 
@@ -45,7 +45,7 @@ class Entry(Base):
     __tablename__ = 'entry'
 
     entry_id = Column(Integer, primary_key=True)
-    client_id = Column(Integer, ForeignKey("client.client_id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("client.user_id"), nullable=False)
     service_id = Column(Integer, ForeignKey("service.service_id"), nullable=False)
     time_entry = Column(Time)
 

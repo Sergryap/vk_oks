@@ -22,20 +22,15 @@ def user_bot():
 					msg = event.text.lower()
 					user_id = event.user_id
 					if user_id not in users:
-						# Для каждого пользователя создаем свой класс
 						exec(f"id_{user_id} = VkAgent({user_id})")
 						exec(f"id_{user_id}.msg = '{msg}'")
 						users.append(user_id)
 					else:
 						exec(f"id_{user_id}.msg = '{msg}'")
-					while True:
-						exec(f"id_{user_id}.handler_msg()")
-						x = compile(f"id_{user_id}.waiting_message", "test", "eval")
-						if eval(x):
-							break
-			# if event.type == VkEventType.USER_OFFLINE:
-			# 	user_id = event.user_id
-			# 	exec(f"id_{user_id}.search_offset = id_{user_id}.user_offset_get()")
-			# 	exec(f"id_{user_id}.session_set()")
+					exec(f"id_{user_id}.handler_msg()")
 	except requests.exceptions.ReadTimeout:
 		user_bot()
+
+
+if __name__ == '__main__':
+	user_bot()
