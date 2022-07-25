@@ -93,11 +93,11 @@ class VkAgent(VkSearch):
 		elif self.verify_contact_admin():
 			self.send_contact_admin()  # отправляем данные для связи с руководством
 		elif self.verify_thank_you():
-			self.send_bay_bay()
+			self.send_bay_bay()  # прощаемся
 		elif self.verify_our_site():
-			self.send_site()
+			self.send_site()  # отправляем ссылку на сайт
 		elif self.verify_work_example():
-			self.send_work_example()
+			self.send_work_example()  # отправляем примеры работ
 
 	def verify_hello(self):
 		"""Проверка сообщения на приветствие"""
@@ -120,7 +120,7 @@ class VkAgent(VkSearch):
 		return bool(pattern.findall(self.msg))
 
 	def verify_address(self):
-		pattern = re.compile(r'\b(?:адрес|вас\s*найти|найти\s*вас|находитесь|добрать?ся|контакты)\w*')
+		pattern = re.compile(r'\b(?:адрес|вас\s*найти|найти\s*вас|находитесь|добрать?ся|контакты|где\s*ваш\s*офис)\w*')
 		return bool(pattern.findall(self.msg))
 
 	def verify_work_example(self):
@@ -187,7 +187,7 @@ class VkAgent(VkSearch):
 	def send_bay_bay(self):
 		text1 = f"До свидания, {self.user_info['first_name']}. Будем рады видеть вас снова!"
 		text2 = f"До скорых встреч, {self.user_info['first_name']}. Было приятно с Вами пообщаться. Ждём вас снова!"
-		text3 = f"Всего хорошего Вам, {self.user_info['first_name']}. Надеюсь мы ответли на Ваши вопросы. Ждём вас снова! До скорых встреч"
+		text3 = f"Всего хорошего Вам, {self.user_info['first_name']}. Надеюсь мы ответли на Ваши вопросы. Ждём вас снова! До скорых встреч."
 		text = random.choice([text1, text2, text3])
 		self.send_message(some_text=text, buttons=True)
 
