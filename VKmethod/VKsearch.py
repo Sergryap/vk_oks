@@ -9,7 +9,7 @@ class VkSearch:
     """Класс методов поиска и сортировки из api-vk"""
 
     url = 'https://api.vk.com/method/'
-    with open(os.path.join("VKmethod", "token.txt"), encoding='utf-8') as file:
+    with open(os.path.join("token.txt"), encoding='utf-8') as file:
         token = [t.strip() for t in file.readlines()]
     token_bot = token[0]
     token = token[1:]
