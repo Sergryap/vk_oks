@@ -3,23 +3,23 @@ import vk_api
 import requests
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 from VKmethod.VKsearch import VkSearch
+from Data_base.DecorDB import db_insert
 import os
 import re
 import random
+
 
 class VkAgent(VkSearch):
 	"""
 	Основной класс взаимодействия пользователя и бота
 	"""
-
 	def __init__(self, user_id):
 		super().__init__()
 		self.user_id = user_id
 		self.msg = ''
 		self.vk_session = vk_api.VkApi(token=self.token_bot)
 		self.user_info = []
-		# self.users_id = [7352307, 9681859]  # id администраторов сообщества
-		self.users_id = [7352307]  # id администраторов сообщества
+		self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
 
 	def send_message(self, some_text, buttons=False):
 		"""
@@ -77,6 +77,7 @@ class VkAgent(VkSearch):
 	def send_message_buttons(self, some_text):
 		pass
 
+	@db_insert(table='Message')
 	def handler_msg(self):
 		"""Функция-обработчик событий сервера типа MESSAGE_NEW"""
 		if not self.user_info:
@@ -106,7 +107,7 @@ class VkAgent(VkSearch):
 
 	def verify_entry(self):
 		"""Проверка сообщения на вхождение запроса о записи на услугу"""
-		pattern = re.compile(r'\b(?:запис|окош|окн[ао]|свобод)\w*')
+		pattern = re.compile(r'\b(?:запис|окош|окн[ао]|свобод|хочу\s*нар[ао]стить)\w*')
 		return bool(pattern.findall(self.msg))
 
 	def verify_price(self):
@@ -187,7 +188,7 @@ class VkAgent(VkSearch):
 	def send_bay_bay(self):
 		text1 = f"До свидания, {self.user_info['first_name']}. Будем рады видеть вас снова!"
 		text2 = f"До скорых встреч, {self.user_info['first_name']}. Было приятно с Вами пообщаться. Ждём вас снова!"
-		text3 = f"Всего хорошего Вам, {self.user_info['first_name']}. Надеюсь мы ответли на Ваши вопросы. Ждём вас снова! До скорых встреч."
+		text3 = f"Всего доброго Вам, {self.user_info['first_name']}. Надеюсь мы ответли на Ваши вопросы. Ждём вас снова! До скорых встреч."
 		text = random.choice([text1, text2, text3])
 		self.send_message(some_text=text, buttons=True)
 
@@ -197,4 +198,3 @@ class VkAgent(VkSearch):
 		vk.com/albums-142029999
 		"""
 		self.send_message(some_text=text, buttons=True)
-
