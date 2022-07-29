@@ -1,7 +1,7 @@
 import time
 from datetime import date
 from functools import wraps
-import sqlalchemy.exc
+from sqlalchemy.exc import OperationalError
 from Data_base.create_schema import Client, Entry, Service, Message
 from Data_base.methodsDB import DbMethods
 from datetime import datetime
@@ -16,7 +16,7 @@ class DBConnect(DbMethods):
 				self.insert_client(data)
 			if table == 'Message':
 				self.insert_msg()
-		except sqlalchemy.exc.OperationalError:
+		except OperationalError:
 			self.data_base_insert(table, data)
 
 	def insert_client(self, data: dict):
