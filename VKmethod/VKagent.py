@@ -40,7 +40,7 @@ class VkAgent(VkSearch):
 
 	def send_message_to_admin(self, user_id):
 		text = f"""
-		Сообщение от пользователя https://vk.com/id{self.user_id} в чате https://vk.com/gim214214626
+		Сообщение от пользователя https://vk.com/id{self.user_id} в чате https://vk.com/gim142029999
 		"{self.msg}"
 		"""
 		params = {
@@ -85,7 +85,7 @@ class VkAgent(VkSearch):
 		self.send_message_to_all_admins()
 		if self.verify_hello():
 			self.send_hello()  # отправляем приветственное сообщение
-		elif self.verify_address():
+		if self.verify_address():
 			self.send_address()  # отправляем адрес
 		elif self.verify_entry():
 			self.send_link_entry()  # отправляем ссылку на запись
@@ -104,6 +104,17 @@ class VkAgent(VkSearch):
 		"""Проверка сообщения на приветствие"""
 		pattern = re.compile(r'\b(?:привет|здрав?ств?уй|добрый|доброго\s*времени|рад[а?]\s*видеть)\w*')
 		return bool(pattern.findall(self.msg))
+
+	def verify_only_hello(self):
+		"""Проверка на то, что пользователь отправил только приветствие"""
+		verify_all = bool(
+			self.verify_entry() or
+			self.verify_price() or
+			self.verify_contact_admin() or
+			self.verify_address() or
+			self.verify_our_site()
+		)
+		return bool(self.verify_hello() and not verify_all)
 
 	def verify_entry(self):
 		"""Проверка сообщения на вхождение запроса о записи на услугу"""
@@ -136,10 +147,22 @@ class VkAgent(VkSearch):
 		return self.msg == 'наш сайт'
 
 	def send_hello(self):
-		text1 = f"Доброго времени суток, {self.user_info['first_name']}! Очень рады видеть вас у нас. Напишите, что бы вы хотели?"
-		text2 = f"Здравствуйте, {self.user_info['first_name']}! Очень рады видеть вас у нас. Напишите нам, что вас интересует?"
-		text3 = f"Приветствуем Вас, {self.user_info['first_name']}! Рады видеть вас у нас в гостях. Что вас интересует? Напишите пожалуйста"
-		text = random.choice([text1, text2, text3])
+		d = [
+			'\nНапишите, что бы вы хотели или выберите ниже.',
+			'\nНапишите мне, что вас интересует или выберите ниже.',
+			'\nЧто вас интересует? Напишите пожалуйста или выберите ниже.'
+		]
+		t = '\nПока менеджеры заняты я могу:' \
+			'\n- помочь записатья;' \
+			'\n- сориентировать по ценам;' \
+			'\n- помочь найти и связаться с нами;' \
+			'\n- показать примеры наших работ'
+
+		delta = random.choice(d) if self.verify_only_hello() else ''
+		t1 = f"Доброго времени суток, {self.user_info['first_name']}! Я бот Oksa-studio.\nБуду рад нашему общению.\n{t}\n{delta}"
+		t2 = f"Здравствуйте, {self.user_info['first_name']}! Я чат-бот Oksa-studio.\nОчень рад видеть Вас у нас.\n{t}\n{delta}"
+		t3 = f"Приветствуем Вас, {self.user_info['first_name']}! Я бот этого чата Oksa-studio.\nРад видеть Вас у нас в гостях.\n{t}\n{delta}"
+		text = random.choice([t1, t2, t3])
 		self.send_message(some_text=text, buttons=True)
 
 	def send_link_entry(self):
@@ -188,7 +211,7 @@ class VkAgent(VkSearch):
 	def send_bay_bay(self):
 		text1 = f"До свидания, {self.user_info['first_name']}. Будем рады видеть вас снова!"
 		text2 = f"До скорых встреч, {self.user_info['first_name']}. Было приятно с Вами пообщаться. Ждём вас снова!"
-		text3 = f"Всего доброго Вам, {self.user_info['first_name']}. Надеюсь мы ответли на Ваши вопросы. Ждём вас снова! До скорых встреч."
+		text3 = f"Всего доброго Вам, {self.user_info['first_name']}. Надеюсь мы ответили на Ваши вопросы. Ждём вас снова! До скорых встреч."
 		text = random.choice([text1, text2, text3])
 		self.send_message(some_text=text, buttons=True)
 

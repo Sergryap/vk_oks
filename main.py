@@ -19,14 +19,14 @@ def user_bot():
 		for event in longpool.listen():
 			if event.type == VkEventType.MESSAGE_NEW:
 				if event.to_me:
-					msg = event.text.lower()
+					msg = event.text.lower().replace('''"''', '').replace("""'""", '')
 					user_id = event.user_id
 					if user_id not in users:
 						exec(f"id_{user_id} = VkAgent({user_id})")
-						exec(f"id_{user_id}.msg = '{msg}'")
+						exec(f'id_{user_id}.msg = """{msg}"""')
 						users.append(user_id)
 					else:
-						exec(f"id_{user_id}.msg = '{msg}'")
+						exec(f'id_{user_id}.msg = """{msg}"""')
 					exec(f"id_{user_id}.handler_msg()")
 	except requests.exceptions.ReadTimeout:
 		user_bot()
