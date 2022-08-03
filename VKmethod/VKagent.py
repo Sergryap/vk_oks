@@ -102,7 +102,7 @@ class VkAgent(VkSearch):
 
 	def verify_hello(self):
 		"""Проверка сообщения на приветствие"""
-		pattern = re.compile(r'\b(?:привет|здрав?ств?уй|добрый|доброго\s*времени|рад[а?]\s*видеть)\w*')
+		pattern = re.compile(r'\b(?:приве?т|здрав?ств?уй|добрый|доброго\s*времени|рад[а?]\s*видеть)\w*')
 		return bool(pattern.findall(self.msg))
 
 	def verify_only_hello(self):
