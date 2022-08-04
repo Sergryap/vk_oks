@@ -19,8 +19,8 @@ class VkAgent(VkSearch):
 		self.msg = ''
 		self.vk_session = vk_api.VkApi(token=self.token_bot)
 		self.user_info = []
-		# self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
-		self.users_id = [7352307]  # id администраторов сообщества
+		self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
+		# self.users_id = [7352307]  # id администраторов сообщества
 
 	def send_message(self, some_text, buttons=False, inline=False):
 		"""
