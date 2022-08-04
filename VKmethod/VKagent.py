@@ -167,16 +167,16 @@ class VkAgent(VkSearch):
 		Пока менеджеры заняты я могу:
 		✔️ Помочь записатьcя - "z"
 		✔️️ Сориентировать по ценам - "p"
-		✔️️ Помочь найти и связаться с нами - "h"
-		✔️️ Примеры наших работ - "ex"
+		✔️️ Помочь найти нас - "h"
+		✔️️ Показать наши работы - "ex"
 		✔️️ Связаться с администрацией - "ad"
 		✔️️ Начать с начала - "start"
 		"""
 
 		delta = random.choice(d) if self.verify_only_hello() else ''
-		t1 = f"Доброго времени суток, {self.user_info['first_name']}! Я бот Oksa-studio.\nБуду рад нашему общению.\n{t}{delta}"
-		t2 = f"Здравствуйте, {self.user_info['first_name']}! Я чат-бот Oksa-studio.\nОчень рад видеть Вас у нас.\n{t}{delta}"
-		t3 = f"Приветствуем Вас, {self.user_info['first_name']}! Я бот этого чата Oksa-studio.\nРад видеть Вас у нас в гостях.\n{t}{delta}"
+		t1 = f"Доброго времени суток, {self.user_info['first_name']}!\nЯ бот Oksa-studio.\nБуду рад нашему общению.\n{t}{delta}"
+		t2 = f"Здравствуйте, {self.user_info['first_name']}!\nЯ чат-бот Oksa-studio.\nОчень рад видеть Вас у нас.\n{t}{delta}"
+		t3 = f"Приветствуем Вас, {self.user_info['first_name']}!\nЯ бот этого чата.\nРад видеть Вас у нас в гостях.\n{t}{delta}"
 		text = random.choice([t1, t2, t3])
 		self.send_message(some_text=text, buttons=True, inline=inline)
 
