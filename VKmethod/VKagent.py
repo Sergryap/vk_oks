@@ -19,9 +19,10 @@ class VkAgent(VkSearch):
 		self.msg = ''
 		self.vk_session = vk_api.VkApi(token=self.token_bot)
 		self.user_info = []
-		self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
+		# self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
+		self.users_id = [7352307]  # id администраторов сообщества
 
-	def send_message(self, some_text, buttons=False):
+	def send_message(self, some_text, buttons=False, inline=False):
 		"""
 		Отправка сообщения пользователю.
 		Если buttons=True создается клавиатура
@@ -30,8 +31,10 @@ class VkAgent(VkSearch):
 			"user_id": self.user_id,
 			"message": some_text,
 			"random_id": 0}
-		if buttons:
-			self.get_buttons(params)
+		if buttons == 'send_photo':
+			self.get_button_send_photo(params)
+		elif buttons:
+			self.get_buttons(params, inline=inline)
 		try:
 			self.vk_session.method("messages.send", params)
 		except requests.exceptions.ConnectionError:
@@ -58,9 +61,9 @@ class VkAgent(VkSearch):
 			self.send_message_to_admin(user_id)
 
 	@staticmethod
-	def get_buttons(params: dict):
-		keyboard = VkKeyboard(one_time=False, inline=False)
-		buttons = ['Записаться', 'Прайс', 'Адрес', 'Наш сайт']
+	def get_buttons(params: dict, inline=False):
+		keyboard = VkKeyboard(one_time=False, inline=inline)
+		buttons = ['Записаться', 'Прайс', 'Адрес', 'Примеры работ']
 		buttons_color = [
 			VkKeyboardColor.PRIMARY,
 			VkKeyboardColor.POSITIVE,
@@ -72,6 +75,13 @@ class VkAgent(VkSearch):
 		keyboard.add_line()
 		for btn, btn_color in zip(buttons[2:], buttons_color[2:]):
 			keyboard.add_button(btn, btn_color)
+		params['keyboard'] = keyboard.get_keyboard()
+
+	@staticmethod
+	def get_button_send_photo(params: dict):
+		keyboard = VkKeyboard(one_time=False, inline=True)
+		buttons_color = VkKeyboardColor.PRIMARY
+		keyboard.add_button('Смoтреть еще', buttons_color)
 		params['keyboard'] = keyboard.get_keyboard()
 
 	def send_message_buttons(self, some_text):
@@ -102,7 +112,7 @@ class VkAgent(VkSearch):
 
 	def verify_hello(self):
 		"""Проверка сообщения на приветствие"""
-		pattern = re.compile(r'\b(?:приве?т|здрав?ств?уй|добрый|доброго\s*времени|рад[а?]\s*видеть)\w*')
+		pattern = re.compile(r'\b(?:приве?т|здрав?ств?уй|добрый|доброго\s*времени|рад[а?]\s*видеть|start)\w*')
 		return bool(pattern.findall(self.msg))
 
 	def verify_only_hello(self):
@@ -119,34 +129,34 @@ class VkAgent(VkSearch):
 	def verify_entry(self):
 		"""Проверка сообщения на вхождение запроса о записи на услугу"""
 		pattern = re.compile(r'\b(?:запис|окош|окн[ао]|свобод|хочу\s*нар[ао]стить)\w*')
-		return bool(pattern.findall(self.msg))
+		return bool(pattern.findall(self.msg) or self.msg == 'z')
 
 	def verify_price(self):
 		"""Проверка сообщения на запрос прайса на услуги"""
 		pattern = re.compile(r'\b(?:прайс|цен[аы]|стоит|стоимост|price)\w*')
-		return bool(pattern.findall(self.msg))
+		return bool(pattern.findall(self.msg) or self.msg == 'p' or self.msg == 'р')
 
 	def verify_contact_admin(self):
 		"""Проверка сообщения на запрос связи с администратором"""
 		pattern = re.compile(r'\b(?:админ|руковод|директор|начальств|начальник)\w*')
-		return bool(pattern.findall(self.msg))
+		return bool(pattern.findall(self.msg) or self.msg == 'ad')
 
 	def verify_address(self):
 		pattern = re.compile(r'\b(?:адрес|вас\s*найти|найти\s*вас|находитесь|добрать?ся|контакты|где\s*ваш\s*офис)\w*')
-		return bool(pattern.findall(self.msg))
+		return bool(pattern.findall(self.msg) or self.msg == 'h')
 
 	def verify_work_example(self):
-		pattern = re.compile(r'\b(?:примеры?\s*рабо?т|посмотреть\s*рабо?ты|ваших?\s*рабо?ты?|качество\s*рабо?т)\w*')
-		return bool(pattern.findall(self.msg))
+		pattern = re.compile(r'\b(?:примеры?\s*рабо?т|посмотреть\s*рабо?ты|ваших?\s*рабо?ты?|качество\s*рабо?т|наши работы|смoтреть еще)\w*')
+		return bool(pattern.findall(self.msg) or self.msg == 'ex')
 
 	def verify_thank_you(self):
 		pattern = re.compile(r'\b(?:спасибо|спс|благодар|до\s*свидан|пока)\w*')
 		return bool(pattern.findall(self.msg))
 
 	def verify_our_site(self):
-		return self.msg == 'наш сайт'
+		return bool(self.msg == 'наш сайт' or self.msg == 'site')
 
-	def send_hello(self):
+	def send_hello(self, inline=False):
 		d = [
 			'\nНапишите, что бы вы хотели или выберите ниже.',
 			'\nНапишите мне, что вас интересует или выберите ниже.',
@@ -155,11 +165,12 @@ class VkAgent(VkSearch):
 
 		t = """
 		Пока менеджеры заняты я могу:
-		✔️ Помочь записатья
-		✔️️ Сориентировать по ценам
-		✔️️ Помочь найти и связаться с нами
-		✔️️ Показать примеры наших работ
-		\nЕсли я не смогу ответить на все Ваши вопросы, наш менеджер обязательно свяжется с Вами.
+		✔️ Помочь записатьcя - "z"
+		✔️️ Сориентировать по ценам - "p"
+		✔️️ Помочь найти и связаться с нами - "h"
+		✔️️ Примеры наших работ - "ex"
+		✔️️ Связаться с администрацией - "ad"
+		✔️️ Начать с начала - "start"
 		"""
 
 		delta = random.choice(d) if self.verify_only_hello() else ''
@@ -167,7 +178,7 @@ class VkAgent(VkSearch):
 		t2 = f"Здравствуйте, {self.user_info['first_name']}! Я чат-бот Oksa-studio.\nОчень рад видеть Вас у нас.\n{t}{delta}"
 		t3 = f"Приветствуем Вас, {self.user_info['first_name']}! Я бот этого чата Oksa-studio.\nРад видеть Вас у нас в гостях.\n{t}{delta}"
 		text = random.choice([t1, t2, t3])
-		self.send_message(some_text=text, buttons=True)
+		self.send_message(some_text=text, buttons=True, inline=inline)
 
 	def send_link_entry(self):
 		text = f"""
@@ -208,15 +219,18 @@ class VkAgent(VkSearch):
 		self.send_message(some_text=text, buttons=True)
 
 	def send_address(self):
-		text = f"""
+		text1 = f"""
 		{self.user_info['first_name']}, мы находимся по адресу:\n
 		📍 г.Пермь, ул.Тургенева, д.23.\n
+		"""
+		text2 = """
 		Это малоэтажное кирпичное здание слева от ТЦ "Агат" 
 		Вход через "Идеал-Лик", большой стеклянный тамбур\n
-		https://oksa-studio.ru/contacts/	
-		\nЧто вас еще интересует напишите или выберите ниже.	
+		Что вас еще интересует напишите или выберите ниже.	
 		"""
-		self.send_message(some_text=text, buttons=True)
+		self.send_message(some_text=text1, buttons=True)
+		self.send_photo('photo-195118308_457239030')
+		self.send_message(some_text=text2, buttons=False)
 
 	def send_bay_bay(self):
 		text1 = f"До свидания, {self.user_info['first_name']}. Будем рады видеть вас снова!"
@@ -227,8 +241,16 @@ class VkAgent(VkSearch):
 
 	def send_work_example(self):
 		text = f"""
-		{self.user_info['first_name']}, наши работы вы можете посмотреть здесь:
+		{self.user_info['first_name']}, больше работ здесь:
 		vk.com/albums-142029999
-		\nЧто вас еще интересует напишите или выберите ниже.
+		Что вас еще интересует напишите или выберите ниже.
 		"""
-		self.send_message(some_text=text, buttons=True)
+		self.send_photo()
+		self.send_message(some_text=text, buttons='send_photo')
+
+	def send_photo(self, photo_id=None):
+		attachment = photo_id if photo_id else self.get_photos_example()
+		self.vk_session.method("messages.send", {
+			"user_id": self.user_id,
+			"attachment": attachment,
+			"random_id": 0})

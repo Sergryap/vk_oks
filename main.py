@@ -24,10 +24,12 @@ def user_bot():
 					if user_id not in users:
 						exec(f"id_{user_id} = VkAgent({user_id})")
 						exec(f'id_{user_id}.msg = """{msg}"""')
+						exec(f'id_{user_id}.msg_previous = """{msg}"""')
 						users.append(user_id)
 					else:
 						exec(f'id_{user_id}.msg = """{msg}"""')
 					exec(f"id_{user_id}.handler_msg()")
+					exec(f'id_{user_id}.msg_previous = """{msg}"""')
 	except requests.exceptions.ReadTimeout:
 		user_bot()
 

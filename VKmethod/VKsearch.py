@@ -5,6 +5,9 @@ import datetime as dt
 import time
 from Data_base.DecorDB import db_insert
 from Data_base.DecorDB import DBConnect
+import random
+from pprint import pprint
+from VKmethod.photos import photos
 
 
 class VkSearch(DBConnect):
@@ -13,6 +16,8 @@ class VkSearch(DBConnect):
     url = 'https://api.vk.com/method/'
     with open(os.path.join("VKmethod", "token.txt"), encoding='utf-8') as file:
         token = [t.strip() for t in file.readlines()]
+    # with open(os.path.join("token.txt"), encoding='utf-8') as file:
+    #     token = [t.strip() for t in file.readlines()]
     token_bot = token[0]
     token = token[1:]
 
@@ -79,3 +84,42 @@ class VkSearch(DBConnect):
         if birth_date:
             birth_date = None if len(birth_date.split('.')) < 3 else birth_date
         return birth_date
+
+    def __albums_id(self, owner_id):
+        """
+        Cоздает список, содержащий id альбомов пользователя
+        """
+        params_delta = {'owner_id': owner_id, 'need_system': ''}
+        response = self.get_stability('photos.getAlbums', params_delta)
+        if response and response['response']['items']:
+            albums_id = []
+            for item in response['response']['items']:
+                albums_id.append(item['id'])
+            return albums_id
+
+    def __photos_get(self, owner_id, album_id):
+        """
+        Получение данных по фотографиям из одного альбома (album_id) пользователя (owner_id)
+        :return: список содержащий id photo
+        """
+        params_delta = {'owner_id': owner_id, 'album_id': album_id, 'extended': 1}
+        response = self.get_stability('photos.get', params_delta)
+        if response:
+            photos_info = []
+            for item in response['response']['items']:
+                photos_info.append(f"photo{owner_id}_{item['id']}")
+            return photos_info
+
+    def get_photos_total(self):
+        albums = self.__albums_id('-142029999')
+        all_photos = []
+        for album in albums:
+            all_photos += self.__photos_get('-142029999', album)
+        return all_photos
+
+    @staticmethod
+    def get_photos_example():
+        attachment = ''
+        for photo in random.sample(photos, 4):
+            attachment += f"{photo},"
+        return attachment[:-1]
