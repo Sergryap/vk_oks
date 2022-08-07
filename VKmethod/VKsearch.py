@@ -120,6 +120,6 @@ class VkSearch(DBConnect):
     @staticmethod
     def get_photos_example():
         attachment = ''
-        for photo in random.sample(photos, 4):
+        for photo in random.sample(photos, 5):
             attachment += f"{photo},"
         return attachment[:-1]

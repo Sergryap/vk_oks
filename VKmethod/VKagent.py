@@ -7,12 +7,24 @@ from Data_base.DecorDB import db_insert
 import os
 import re
 import random
+from Selenium_method.main import load_info_client
 
 
 class VkAgent(VkSearch):
 	"""
 	Основной класс взаимодействия пользователя и бота
 	"""
+
+	COMMAND = f"""
+	✔️ Помочь записатьcя - "z"
+	✔️ Напомнить время последней записи - "r"
+	✔️️ Сориентировать по ценам - "p"
+	✔️️ Помочь найти нас - "h"
+	✔️️ Показать наши работы - "ex"
+	✔️️ Связаться с администрацией - "ad"
+	✔️️ Начать с начала - "start"
+	"""
+
 	def __init__(self, user_id):
 		super().__init__()
 		self.user_id = user_id
@@ -63,7 +75,7 @@ class VkAgent(VkSearch):
 	@staticmethod
 	def get_buttons(params: dict, inline=False):
 		keyboard = VkKeyboard(one_time=False, inline=inline)
-		buttons = ['Записаться', 'Прайс', 'Адрес', 'Примеры работ']
+		buttons = ['Записаться', 'Start', 'Адрес', 'Примеры работ']
 		buttons_color = [
 			VkKeyboardColor.PRIMARY,
 			VkKeyboardColor.POSITIVE,
@@ -109,6 +121,8 @@ class VkAgent(VkSearch):
 			self.send_site()  # отправляем ссылку на сайт
 		elif self.verify_work_example():
 			self.send_work_example()  # отправляем примеры работ
+		elif self.verify_last_service_entry():
+			self.send_last_service_entry()  # отправляем время последней записи
 
 	def verify_hello(self):
 		"""Проверка сообщения на приветствие"""
@@ -125,6 +139,12 @@ class VkAgent(VkSearch):
 			self.verify_our_site()
 		)
 		return bool(self.verify_hello() and not verify_all)
+
+	def verify_last_service_entry(self):
+		b1 = bool(self.msg == "r")
+		b2 = bool(self.msg_previous == "r")
+		b3 = bool(self.msg not in ["z", "r", "p", "h", "ex", "ad", "start"])
+		return b1 or b2 and b3
 
 	def verify_entry(self):
 		"""Проверка сообщения на вхождение запроса о записи на услугу"""
@@ -163,14 +183,9 @@ class VkAgent(VkSearch):
 			'\nЧто вас интересует? Напишите пожалуйста или выберите ниже.'
 		]
 
-		t = """
+		t = f"""
 		Пока менеджеры заняты я могу:
-		✔️ Помочь записатьcя - "z"
-		✔️️ Сориентировать по ценам - "p"
-		✔️️ Помочь найти нас - "h"
-		✔️️ Показать наши работы - "ex"
-		✔️️ Связаться с администрацией - "ad"
-		✔️️ Начать с начала - "start"
+		{self.COMMAND}
 		"""
 
 		delta = random.choice(d) if self.verify_only_hello() else ''
@@ -190,6 +205,39 @@ class VkAgent(VkSearch):
 		Что вас еще интересует напишите или выберите ниже.
 		"""
 		self.send_message(some_text=text, buttons=True)
+
+	def send_last_service_entry(self):
+		if self.msg == "r":
+			text_request = f"""
+			{self.user_info['first_name']},
+			напишите Ваш номер телефона, по которому вы записывались, чтобы найти вашу запись.
+			
+			Либо введите другую команду:
+			{self.COMMAND}
+			"""
+			self.send_message(some_text=text_request, buttons=True)
+		if self.msg_previous == "r" and self.msg != "r":
+			self.send_message(some_text="Немного подождите. Получаю данные...", buttons=True)
+			answer = load_info_client(tel_client=self.msg)
+			if answer:
+				text_answer = f"""
+				{self.user_info['first_name']},
+				Дата и время вашей последней записи:
+				✔{answer} 
+				
+				Выберите команду:
+				{self.COMMAND}
+				"""
+			else:
+				text_answer = f"""
+				{self.user_info['first_name']},
+				Извините, но я не нашел у вас ни одной записи.
+				Возможно вам нужно уточнить номер телефона.
+				
+				Для продолжения выберите команду:				
+				{self.COMMAND}
+				"""
+			self.send_message(some_text=text_answer, buttons=True)
 
 	def send_price(self):
 		text = f"""
