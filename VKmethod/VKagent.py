@@ -25,6 +25,17 @@ class VkAgent(VkSearch):
 	✔️️ Начать с начала - "start"
 	"""
 
+	VERIFY_FUNC = {
+		'verify_address': 'send_address',
+		'verify_entry': 'send_link_entry',
+		'verify_price': 'send_price',
+		'verify_contact_admin': 'send_contact_admin',
+		'verify_thank_you': 'send_bay_bay',
+		'verify_our_site': 'send_site',
+		'verify_work_example': 'send_work_example',
+		'verify_last_service_entry': 'send_last_service_entry'
+	}
+
 	def __init__(self, user_id):
 		super().__init__()
 		self.user_id = user_id
@@ -106,23 +117,11 @@ class VkAgent(VkSearch):
 			self.user_info = self.get_info_users()
 		self.send_message_to_all_admins()
 		if self.verify_hello():
-			self.send_hello()  # отправляем приветственное сообщение
-		if self.verify_address():
-			self.send_address()  # отправляем адрес
-		elif self.verify_entry():
-			self.send_link_entry()  # отправляем ссылку на запись
-		elif self.verify_price():
-			self.send_price()  # отправляем ссылку на прайс
-		elif self.verify_contact_admin():
-			self.send_contact_admin()  # отправляем данные для связи с руководством
-		elif self.verify_thank_you():
-			self.send_bay_bay()  # прощаемся
-		elif self.verify_our_site():
-			self.send_site()  # отправляем ссылку на сайт
-		elif self.verify_work_example():
-			self.send_work_example()  # отправляем примеры работ
-		elif self.verify_last_service_entry():
-			self.send_last_service_entry()  # отправляем время последней записи
+			self.send_hello()
+		for verify, func in self.VERIFY_FUNC.items():
+			x = compile(f'self.{verify}()', 'test', 'eval')
+			if eval(x):
+				exec(f'self.{func}()')
 
 	def verify_hello(self):
 		"""Проверка сообщения на приветствие"""
@@ -177,6 +176,21 @@ class VkAgent(VkSearch):
 		return bool(self.msg == 'наш сайт' or self.msg == 'site')
 
 	def send_hello(self, inline=False):
+
+		def good_time():
+			tm = time.ctime()
+			pattern = re.compile(r"(\d+):\d+:\d+")
+			h = int(pattern.search(tm).group(1))
+			h = h + 5 if h < 19 else (h + 5) // 24
+			if h < 6:
+				return "Доброй ночи"
+			elif h < 11:
+				return "Доброе утро"
+			elif h < 18:
+				return "Добрый день"
+			elif h <= 23:
+				return "Добрый вечер"
+
 		d = [
 			'\nНапишите, что бы вы хотели или выберите ниже.',
 			'\nНапишите мне, что вас интересует или выберите ниже.',
@@ -189,9 +203,9 @@ class VkAgent(VkSearch):
 		"""
 
 		delta = random.choice(d) if self.verify_only_hello() else ''
-		t1 = f"Доброго времени суток, {self.user_info['first_name']}!\nЯ бот Oksa-studio.\nБуду рад нашему общению.\n{t}{delta}"
-		t2 = f"Здравствуйте, {self.user_info['first_name']}!\nЯ чат-бот Oksa-studio.\nОчень рад видеть Вас у нас.\n{t}{delta}"
-		t3 = f"Приветствуем Вас, {self.user_info['first_name']}!\nЯ бот этого чата.\nРад видеть Вас у нас в гостях.\n{t}{delta}"
+		t1 = f"{good_time()}, {self.user_info['first_name']}!\nЯ бот Oksa-studio.\nБуду рад нашему общению.\n{t}{delta}"
+		t2 = f"{good_time()}, {self.user_info['first_name']}!\nЯ чат-бот Oksa-studio.\nОчень рад видеть Вас у нас.\n{t}{delta}"
+		t3 = f"{good_time()}, {self.user_info['first_name']}!\nЯ бот этого чата.\nРад видеть Вас у нас в гостях.\n{t}{delta}"
 		text = random.choice([t1, t2, t3])
 		self.send_message(some_text=text, buttons=True, inline=inline)
 
@@ -202,7 +216,8 @@ class VkAgent(VkSearch):
 		✔️ По тел. +7(919)442-35-36
 		✔️ Через личные сообщения: @id9681859 (Оксана)
 		✔ Дождаться сообщения от нашего менеджера\n
-		Что вас еще интересует напишите или выберите ниже.
+		Что вас еще интересует напишите или выберите ниже:
+		{self.COMMAND}
 		"""
 		self.send_message(some_text=text, buttons=True)
 
@@ -243,7 +258,8 @@ class VkAgent(VkSearch):
 		text = f"""
 		{self.user_info['first_name']}, цены на наши услуги можно посмотреть здесь:
 		✔️https://vk.com/uslugi-142029999\n
-		Что вас еще интересует напишите или выберите ниже.
+		Что вас еще интересует напишите или выберите ниже:
+		{self.COMMAND}
 		"""
 		self.send_message(some_text=text, buttons=True)
 
@@ -254,7 +270,9 @@ class VkAgent(VkSearch):
 		✔ https://vk.com/id448564047
 		✔ https://vk.com/id9681859
 		✔ Email: oksarap@mail.ru
-		✔ Тел.: +7(919)442-35-36	
+		✔ Тел.: +7(919)442-35-36\n
+		Что вас еще интересует напишите или выберите ниже:
+		{self.COMMAND}	
 		"""
 		self.send_message(some_text=text, buttons=True)
 
@@ -262,7 +280,8 @@ class VkAgent(VkSearch):
 		text = f"""
 		{self.user_info['first_name']}, много полезной информации о наращивании ресниц смотрите на нашем сайте:
 		https://oksa-studio.ru/
-		\nЧто вас еще интересует напишите или выберите ниже.
+		\nЧто вас еще интересует напишите или выберите ниже.\n
+		{self.COMMAND}
 		"""
 		self.send_message(some_text=text, buttons=True)
 
@@ -271,10 +290,11 @@ class VkAgent(VkSearch):
 		{self.user_info['first_name']}, мы находимся по адресу:\n
 		📍 г.Пермь, ул.Тургенева, д.23.\n
 		"""
-		text2 = """
+		text2 = f"""
 		Это малоэтажное кирпичное здание слева от ТЦ "Агат" 
 		Вход через "Идеал-Лик", большой стеклянный тамбур\n
-		Что вас еще интересует напишите или выберите ниже.	
+		Что вас еще интересует напишите или выберите ниже.\n
+		{self.COMMAND}	
 		"""
 		self.send_message(some_text=text1, buttons=True)
 		self.send_photo('photo-195118308_457239030')

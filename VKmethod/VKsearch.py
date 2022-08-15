@@ -67,7 +67,7 @@ class VkSearch(DBConnect):
             birth_date = self.get_birth_date(response)
             return {
                 'user_id': self.user_id,
-                'city_id': response['response'][0]['city']['id'],
+                'city_id': None if not response['response'][0].get('city') else response['response'][0]['city'].get('id'),
                 'sex': response['response'][0]['sex'],
                 'first_name': response['response'][0]['first_name'],
                 'last_name': response['response'][0]['last_name'],

@@ -14,7 +14,8 @@ import re
 def load_cookies(driver):
 	"""Загрузка куков"""
 	driver.get(url=url_service)
-	time.sleep(random.uniform(0.5, 1))
+	# time.sleep(random.uniform(0.5, 1))
+	driver.implicitly_wait(5)
 	for cookie in pickle.load(open(f"{tel}_cookies", "rb")):
 		driver.add_cookie(cookie)
 
@@ -77,6 +78,7 @@ def get_driver():
 	options.add_argument(f"User-Agent={headers['User-Agent']}")
 	# options.add_argument("--headless")
 	options.headless = True
+	options.add_argument("--disable-blink-features=AutomationControlled")
 	return webdriver.Chrome(options=options)
 
 
@@ -85,16 +87,15 @@ def load_info_client(tel_client: str):
 	driver = get_driver()
 	try:
 		load_cookies(driver)
-		time.sleep(random.uniform(0.5, 1))
 		driver.get(url=url_company)
-		time.sleep(random.uniform(1, 3))
+		driver.implicitly_wait(5)
 		xpath = "/html/body/div[1]/div[2]/div[2]/div[2]/form/div[1]/div[1]/div[1]/div/input"
 		tel_input = driver.find_element(by="xpath", value=xpath)
-		time.sleep(random.uniform(0.5, 1))
-		for n in tel_client:
-			tel_input.send_keys(n)
-			time.sleep(.05)
-		time.sleep(random.uniform(2, 3))
+		tel_input.send_keys(tel_client)
+		# for n in tel_client:
+		# 	tel_input.send_keys(n)
+		# 	time.sleep(.1)
+		time.sleep(2)
 		verify_data = driver.find_element(by="tag name", value="tbody").find_elements(by="tag name", value="tr")
 		if len(verify_data) > 1:
 			return None
@@ -103,7 +104,6 @@ def load_info_client(tel_client: str):
 		for data in lots_data:
 			if pattern.search(data.text):
 				return data.text
-		time.sleep(random.uniform(.5, 1))
 	except Exception as ex:
 		print(ex)
 	finally:
