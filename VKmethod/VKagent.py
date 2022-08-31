@@ -42,8 +42,8 @@ class VkAgent(VkSearch):
 		self.msg = ''
 		self.vk_session = vk_api.VkApi(token=self.token_bot)
 		self.user_info = []
-		self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
-		# self.users_id = [7352307]  # id администраторов сообщества
+		# self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
+		self.users_id = [7352307]  # id администраторов сообщества
 
 	def send_message(self, some_text, buttons=False, inline=False):
 		"""
@@ -64,11 +64,15 @@ class VkAgent(VkSearch):
 			time.sleep(1)
 			self.send_message(some_text)
 
-	def send_message_to_admin(self, user_id):
-		text = f"""
-		Сообщение от пользователя https://vk.com/id{self.user_id} в чате https://vk.com/gim142029999
-		"{self.msg}"
-		"""
+	def send_message_to_admin(self, user_id, msg_error=None):
+		if msg_error:
+			text = "Ошибка в работе бота oksa_studio"
+		else:
+			text = f"""
+			Сообщение от пользователя https://vk.com/id{self.user_id} в чате https://vk.com/gim142029999
+			"{self.msg}"
+			"""
+
 		params = {
 			"user_id": user_id,
 			"message": text,
@@ -79,9 +83,9 @@ class VkAgent(VkSearch):
 			time.sleep(1)
 			self.send_message_to_admin(user_id)
 
-	def send_message_to_all_admins(self):
+	def send_message_to_all_admins(self, msg_error=None):
 		for user_id in self.users_id:
-			self.send_message_to_admin(user_id)
+			self.send_message_to_admin(user_id, msg_error=msg_error)
 
 	@staticmethod
 	def get_buttons(params: dict, inline=False):
@@ -198,7 +202,7 @@ class VkAgent(VkSearch):
 		]
 
 		t = f"""
-		Пока менеджеры заняты я могу:
+		Пока менеджеры {'спят' if good_time() == 'Доброй ночи' else  'заняты'} я могу:
 		{self.COMMAND}
 		"""
 
@@ -297,7 +301,7 @@ class VkAgent(VkSearch):
 		{self.COMMAND}	
 		"""
 		self.send_message(some_text=text1, buttons=True)
-		self.send_photo('photo-195118308_457239030')
+		self.send_photo('photo-195118308_457239030,photo-142029999_457243624')
 		self.send_message(some_text=text2, buttons=False)
 
 	def send_bay_bay(self):
