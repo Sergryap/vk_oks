@@ -31,6 +31,7 @@ class DBConnect(DbMethods):
 			user_add = Client(**data)
 			session.add(user_add)
 			session.commit()
+			session.close()
 
 	def insert_msg(self):
 		data = {
@@ -42,15 +43,25 @@ class DBConnect(DbMethods):
 		user_add = Message(**data)
 		session.add(user_add)
 		session.commit()
+		session.close()
 
 	def verify_insert_client(self):
 		"""Проверка вхождения пользователя в таблицу User"""
-		sel = self.conn.execute(f"""
-			SELECT user_id
-			FROM client
-			WHERE user_id = {self.user_id}
-			""").fetchall()
-		return not sel
+		session = self.Session()
+		b = session.query(Client).get(self.user_id)
+		# q = session.query(Client.user_id).filter(Client.user_id == self.user_id)
+		# b = session.query(q.exists()).one()[0]
+		session.close()
+		return not b
+		# q = session.query(Client).filter(Client.user_id == 7352307).count()
+		# q = session.query(Client).filter(Client.user_id == 7352307).all()[0].user_id
+
+		# sel = self.conn.execute(f"""
+		# 	SELECT user_id
+		# 	FROM client
+		# 	WHERE user_id = {self.user_id}
+		# 	""").fetchall()
+		# return not sel
 
 	@staticmethod
 	def date_format(birth_date: str):
@@ -79,3 +90,8 @@ def db_insert(table: str):
 		return new_func
 
 	return dbase
+
+
+if __name__ == '__main__':
+	a = DBConnect()
+	print(a.verify_insert_client())
