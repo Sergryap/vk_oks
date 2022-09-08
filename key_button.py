@@ -1,6 +1,5 @@
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
-
 class MyKeyButton:
 
 	@staticmethod
@@ -41,4 +40,32 @@ class MyKeyButton:
 		keyboard = VkKeyboard(one_time=False, inline=True)
 		buttons_color = VkKeyboardColor.PRIMARY
 		keyboard.add_button('Заполнить анкету', buttons_color)
+		params['keyboard'] = keyboard.get_keyboard()
+
+	@staticmethod
+	def get_button_break(params: dict):
+		keyboard = VkKeyboard(one_time=False, inline=True)
+		buttons_color = VkKeyboardColor.PRIMARY
+		keyboard.add_button('Отменить', buttons_color)
+		params['keyboard'] = keyboard.get_keyboard()
+
+	@staticmethod
+	def get_practic_extention(params: dict):
+		keyboard = VkKeyboard(one_time=False, inline=True)
+		buttons = ['Да', 'Нет']
+		btn_color = VkKeyboardColor.PRIMARY
+		for btn in buttons:
+			keyboard.add_button(btn, btn_color)
+		params['keyboard'] = keyboard.get_keyboard()
+
+
+	@staticmethod
+	def get_what_job(params: dict):
+		keyboard = VkKeyboard(one_time=False, inline=True)
+		buttons = ['Пропустить', 'Пропустить', 'Пропустить', 'Пропустить', 'Конец']
+		btn_color = VkKeyboardColor.SECONDARY
+		for i, btn in enumerate(buttons, start=1):
+			keyboard.add_button(btn, btn_color)
+			if i != len(buttons):
+				keyboard.add_line()
 		params['keyboard'] = keyboard.get_keyboard()

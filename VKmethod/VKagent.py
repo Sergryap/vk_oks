@@ -60,8 +60,15 @@ class VkAgent(
 			self.get_button_fsm_quiz(params)
 		elif buttons == 'training_buttons':
 			self.get_button_training(params)
+		elif buttons == 'break':
+			self.get_button_break(params)
+		elif buttons == 'practic_extention':
+			self.get_practic_extention(params)
+		elif buttons == 'what_job':
+			self.get_what_job(params)
 		elif buttons:
 			self.get_buttons(params)
+
 
 		try:
 			self.vk_session.method("messages.send", params)

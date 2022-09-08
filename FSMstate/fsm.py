@@ -33,7 +33,12 @@ class FSMQuiz:
 		}
 		self.data_quiz_list = []
 
-	TEXT_OFF = "Спасибо, вы можете продолжить в любое время"
+	TEXT_OFF = 'Спасибо, вы можете продолжить в любое время. Просто отправьте "обучение" или "ed".'
+
+	def verify_phone(self):
+		pattern = re.compile(r'^(\+7|7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$')
+		return bool(pattern.findall(self.msg))
+
 
 	def get_steps_quiz(self):
 		return [
@@ -51,7 +56,7 @@ class FSMQuiz:
 		"""
 		# pattern_on = re.compile(r'\b(?:обучен|обучить?ся|выучить?ся|научить?ся|курс)\w*')
 		pattern_on = re.compile(r'\b(?:анкета|заполнить анкету)\w*')
-		pattern_off = re.compile(r'\b(?:отмена|стоп|stop)\w*')
+		pattern_off = re.compile(r'\b(?:отмена|отменить|стоп|stop)\w*')
 
 		if bool(pattern_on.findall(self.msg)) and not self.__dict__.get('fsm_quiz', False):
 			self.fsm_quiz = True
@@ -71,11 +76,25 @@ class FSMQuiz:
 		"""
 		if self.step_count == len(self.get_steps_quiz()):
 			self.fsm_quiz = False
-		self.step_count += 1
-		text = next(self.iter_quiz)
+		if self.step_count == 2 and not self.verify_phone():
+			text = "Укажите номер телефона в верном формате, например: 7(999)999-99-99. Либо отмените заполнение анкеты"
+			buttons = 'break'
+		elif self.step_count == 4:
+			text = next(self.iter_quiz)
+			buttons = 'practic_extention'
+			self.step_count += 1
+		elif self.step_count == 5:
+			text = next(self.iter_quiz)
+			buttons = 'what_job'
+			self.step_count += 1
+		else:
+			text = next(self.iter_quiz)
+			buttons = 'fsm_quiz'
+			self.step_count += 1
+
 		print(text)
 		if self.fsm_quiz:
-			self.send_message(some_text=text, buttons='fsm_quiz')
+			self.send_message(some_text=text, buttons=buttons)
 			self.data_quiz_list.append(self.msg)
 		else:
 			self.send_message(some_text=text, buttons=True)
@@ -91,5 +110,3 @@ class FSMQuiz:
 		if self.fsm_quiz:
 			self.send_msg_fsm_quiz()
 			return True
-
-
