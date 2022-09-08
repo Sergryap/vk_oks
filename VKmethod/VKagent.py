@@ -10,7 +10,6 @@ import os
 import re
 import random
 from Selenium_method.main import load_info_client
-from FSMstate import FSMTraining
 from verify import Verify
 from key_button import MyKeyButton
 
@@ -18,7 +17,6 @@ from key_button import MyKeyButton
 class VkAgent(
 			VkSearch,
 			Verify,
-			FSMTraining,
 			MyKeyButton,
 ):
 	"""
@@ -32,16 +30,15 @@ class VkAgent(
 	✔️️ Помочь найти нас - "h"
 	✔️️ Показать наши работы - "ex"
 	✔️️ Связаться с администрацией - "ad"
+	✔️️ Про наши курсы - "ed"
 	✔️️ Начать с начала - "start"
 	"""
 
 	def __init__(self, user_id):
 		super().__init__()
-		FSMTraining.__init__(self)
 		self.user_id = user_id
-		self.msg = ''
 		self.vk_session = vk_api.VkApi(token=self.token_bot)
-		self.user_info = []
+		self.user_info = self.get_info_users()
 		# self.users_id = [7352307, 448564047, 9681859]  # id администраторов сообщества
 		self.users_id = [7352307]  # id администраторов сообщества
 
@@ -54,12 +51,16 @@ class VkAgent(
 			"user_id": self.user_id,
 			"message": some_text,
 			"random_id": 0}
+
 		if buttons == 'send_photo':
 			self.get_button_send_photo(params)
-		elif buttons == 'fsm_training':
-			self.get_button_fsm_training(params)
+		elif buttons == 'fsm_quiz':
+			self.get_button_fsm_quiz(params)
+		elif buttons == 'training_buttons':
+			self.get_button_training(params)
 		elif buttons:
 			self.get_buttons(params)
+
 		try:
 			self.vk_session.method("messages.send", params)
 		except requests.exceptions.ConnectionError:
@@ -95,10 +96,9 @@ class VkAgent(
 	@db_insert(table='Message')
 	async def handler_msg(self):
 		"""Функция-обработчик событий сервера типа MESSAGE_NEW"""
-		if not self.user_info:
-			self.user_info = self.get_info_users()
+
 		self.send_message_to_all_admins()
-		if self.handler_fsm_training():
+		if self.handler_fsm_quiz():
 			return
 		if self.verify_hello():
 			self.send_hello()
@@ -254,3 +254,11 @@ class VkAgent(
 			"user_id": self.user_id,
 			"attachment": attachment,
 			"random_id": 0})
+
+	def send_training(self):
+		text =\
+			f"{self.user_info['first_name']}, получить подробную информацию о предстоящих курсах" \
+			f" и/или записаться вы можете, заполнив анкету предварительной записи," \
+			f" которая вас ни к чему не обязывает."
+
+		self.send_message(some_text=text, buttons='training_buttons')

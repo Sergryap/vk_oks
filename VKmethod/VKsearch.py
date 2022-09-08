@@ -3,14 +3,16 @@ import json
 import os
 import datetime as dt
 import time
+import random
+
 from Data_base.DecorDB import db_insert
 from Data_base.DecorDB import DBConnect
-import random
+from FSMstate import FSMQuiz
 from pprint import pprint
 from VKmethod.photos import photos
 
 
-class VkSearch(DBConnect):
+class VkSearch(FSMQuiz, DBConnect):
     """Класс методов поиска и сортировки из api-vk"""
 
     url = 'https://api.vk.com/method/'
@@ -22,7 +24,7 @@ class VkSearch(DBConnect):
     token = token[1:]
 
     def __init__(self):
-        # super().__init__()
+        super().__init__()
         self.params = {'access_token': self.token[0], 'v': '5.131'}
         self.author = 0
 

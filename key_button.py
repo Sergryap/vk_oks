@@ -28,10 +28,17 @@ class MyKeyButton:
 		params['keyboard'] = keyboard.get_keyboard()
 
 	@staticmethod
-	def get_button_fsm_training(params: dict):
+	def get_button_fsm_quiz(params: dict):
 		keyboard = VkKeyboard(one_time=False, inline=False)
-		buttons = ['Отмена', 'Да', 'Нет']
+		buttons = ['Отмена', 'Пропустить']
 		btn_color = VkKeyboardColor.PRIMARY
 		for btn in buttons:
 			keyboard.add_button(btn, btn_color)
+		params['keyboard'] = keyboard.get_keyboard()
+
+	@staticmethod
+	def get_button_training(params: dict):
+		keyboard = VkKeyboard(one_time=False, inline=True)
+		buttons_color = VkKeyboardColor.PRIMARY
+		keyboard.add_button('Заполнить анкету', buttons_color)
 		params['keyboard'] = keyboard.get_keyboard()

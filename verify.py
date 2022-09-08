@@ -11,7 +11,8 @@ class Verify:
 		'verify_thank_you': 'send_bay_bay',
 		'verify_our_site': 'send_site',
 		'verify_work_example': 'send_work_example',
-		'verify_last_service_entry': 'send_last_service_entry'
+		'verify_last_service_entry': 'send_last_service_entry',
+		'verify_training': 'send_training',
 	}
 
 	def verify_hello(self):
@@ -65,3 +66,7 @@ class Verify:
 
 	def verify_our_site(self):
 		return bool(self.msg == 'наш сайт' or self.msg == 'site')
+
+	def verify_training(self):
+		pattern = re.compile(r'\b(?:обучен|обучить?ся|выучить?ся|научить?ся|курс)\w*')
+		return bool(pattern.findall(self.msg) or self.msg == 'ed')
