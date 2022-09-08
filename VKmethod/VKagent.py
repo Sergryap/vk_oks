@@ -10,12 +10,14 @@ import os
 import re
 import random
 from Selenium_method.main import load_info_client
+from FSMstate import FSMQuiz
 from verify import Verify
 from key_button import MyKeyButton
 
 
 class VkAgent(
 			VkSearch,
+			FSMQuiz,
 			Verify,
 			MyKeyButton,
 ):

@@ -7,12 +7,11 @@ import random
 
 from Data_base.DecorDB import db_insert
 from Data_base.DecorDB import DBConnect
-from FSMstate import FSMQuiz
 from pprint import pprint
 from VKmethod.photos import photos
 
 
-class VkSearch(FSMQuiz, DBConnect):
+class VkSearch(DBConnect):
     """Класс методов поиска и сортировки из api-vk"""
 
     url = 'https://api.vk.com/method/'
